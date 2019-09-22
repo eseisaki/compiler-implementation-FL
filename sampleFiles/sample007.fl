@@ -1,0 +1,21 @@
+program half_pyramid;
+
+
+var i,j,rows:integer;
+
+begin
+
+writeString("Enter number of rows: ");
+rows:=readInteger();
+
+for i:=1 to rows  do
+begin
+	for j:=1 to i do
+	begin
+		writeInteger(j)
+	end;	
+		
+	writeString("\n")	
+end;
+
+end.

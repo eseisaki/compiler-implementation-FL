@@ -1,0 +1,42 @@
+(*Palindrome number in C*)
+
+program complement;
+
+	@defmacro SIZE 8
+
+    var n, reverse, temp: integer;
+	
+
+begin
+
+	writeString("Enter a number to check if it is a palindrome or not\n");
+
+	(* Input  string from user *)
+    n:=readInteger();
+	temp:=n;
+
+    repeat
+	begin
+        reverse:= reverse*10;
+		reverse:= reverse+temp mod 10;
+		temp:= temp/10
+	end;
+	until temp<>0
+	
+	if n=reverse then
+	begin
+		writeString("Yes,");
+		writeInteger(n);
+		writeString(" is a palindrome number.");
+		writeString("\n")
+	end;
+	else begin
+		writeString("No,");
+		writeInteger(n);
+		writeString(" is not a palindrome number.");
+		writeString("\n")
+	end;
+    
+    writeString("\n")
+
+end.

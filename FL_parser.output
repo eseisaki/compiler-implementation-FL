@@ -1,0 +1,4823 @@
+Grammar
+
+    0 $accept: program $end
+
+    1 program: program_decl sec_header complex_cmd '.'
+
+    2 program_decl: KW_PROGRAM IDENT ';'
+
+    3 sec_header: %empty
+    4           | sec_header var_decl
+    5           | sec_header subprogram
+    6           | sec_header ';' var_decl
+    7           | sec_header ';' subprogram
+
+    8 complex_cmd: KW_BEGIN statements KW_END
+
+    9 statements: %empty
+   10           | statement_list
+
+   11 statement_list: statement
+   12               | statement_list ';' statement
+   13               | statement_list statement
+
+   14 statement: cmd_list
+   15          | return_cmd
+   16          | result_cmd
+
+   17 subprogram: procedure
+   18           | function
+
+   19 basic_data_type: KW_INTEGER
+   20                | KW_BOOLEAN
+   21                | KW_CHAR
+   22                | KW_REAL
+
+   23 dimensions: '[' POSINT ']'
+   24           | dimensions '[' POSINT ']'
+
+   25 var_decl: KW_VAR var_decl_comp
+   26         | var_decl_comp
+   27         | special_type
+
+   28 var_decl_comp: var_id ':' basic_data_type ';'
+   29              | var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | var_id ':' IDENT ';'
+
+   32 special_type: KW_TYPE types
+   33             | types
+
+   34 types: var_id '=' data_type ';'
+   35      | var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+
+   36 var_id: IDENT
+   37       | var_id ',' IDENT
+
+   38 procedure: procedure_decl sec_header complex_cmd ';'
+
+   39 procedure_decl: KW_PROCEDURE IDENT '(' declaration ')' ';'
+
+   40 declaration: %empty
+   41            | declaration_comp
+   42            | declaration ';' declaration_comp
+
+   43 declaration_comp: var_id ':' basic_data_type
+   44                 | var_id ':' IDENT
+   45                 | var_id ':' KW_ARRAY KW_OF basic_data_type
+   46                 | var_id ':' KW_ARRAY dimensions KW_OF basic_data_type
+
+   47 function: function_decl sec_header function_body
+
+   48 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';'
+   49              | KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';'
+
+   50 data_type: basic_data_type
+   51          | KW_ARRAY KW_OF basic_data_type
+   52          | KW_ARRAY dimensions KW_OF basic_data_type
+
+   53 function_body: KW_BEGIN func_statements KW_END ';'
+
+   54 func_statements: %empty
+   55                | statement_list2
+
+   56 statement_list2: function_stmt
+   57                | statement_list2 ';' function_stmt
+   58                | statement_list2 function_stmt
+
+   59 function_stmt: cmd_list
+   60              | return_cmd2
+   61              | result_cmd
+
+   62 expr: unary
+   63     | KW_NOT unary
+   64     | OP_LOG_NOT unary
+   65     | expr KW_MOD unary
+   66     | expr KW_DIV unary
+   67     | expr '/' unary
+   68     | expr '*' unary
+   69     | expr '+' unary
+   70     | expr '-' unary
+   71     | expr '=' unary
+   72     | expr OP_NEQ unary
+   73     | expr '<' unary
+   74     | expr '>' unary
+   75     | expr OP_LEQT unary
+   76     | expr OP_GEQT unary
+   77     | expr KW_AND unary
+   78     | expr OP_LOG_AND unary
+   79     | expr KW_OR unary
+   80     | expr OP_LOG_OR unary
+
+   81 unary: element
+   82      | '-' element
+   83      | '+' element
+
+   84 element: POSINT
+   85        | REAL
+   86        | IDENT
+   87        | STRING
+   88        | BOOLEAN_TRUE
+   89        | BOOLEAN_FALSE
+   90        | '(' expr ')'
+   91        | '(' basic_data_type ')' expr
+   92        | IDENT hooks_custom
+   93        | func_cmd
+
+   94 hooks_custom: '[' expr ']'
+   95             | hooks_custom '[' expr ']'
+
+   96 cmd_list: if_stmt
+   97         | assign_cmd
+   98         | while_stmt
+   99         | for_stmt
+  100         | goto_cmd
+  101         | repeat_stmt
+  102         | func_cmd
+
+  103 stmt_comp: return_cmd ';'
+  104          | assign_cmd
+  105          | complex_cmd ';'
+  106          | result_cmd
+  107          | if_stmt
+  108          | while_stmt
+  109          | for_stmt
+
+  110 assign_cmd: IDENT TK_ASSIGN expr
+  111           | IDENT hooks_custom TK_ASSIGN expr
+
+  112 if_stmt: KW_IF expr KW_THEN stmt_comp
+  113        | KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+
+  114 while_stmt: KW_WHILE expr KW_DO stmt_comp
+
+  115 repeat_stmt: KW_REPEAT stmt_comp KW_UNTIL expr
+
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+
+  118 goto_cmd: KW_GOTO IDENT ';'
+
+  119 return_cmd: KW_RETURN
+
+  120 return_cmd2: KW_RETURN
+
+  121 result_cmd: KW_RESULT TK_ASSIGN expr
+
+  122 func_cmd: IDENT '(' func_cmd_arg ')'
+
+  123 func_cmd_arg: %empty
+  124             | expr
+  125             | KW_RESULT
+  126             | func_cmd_arg ',' expr
+
+
+Terminals, with rules where they appear
+
+$end (0) 0
+'(' (40) 35 39 48 49 90 91 122
+')' (41) 35 39 48 49 90 91 122
+'*' (42) 68
+'+' (43) 69 83
+',' (44) 37 126
+'-' (45) 70 82
+'.' (46) 1
+'/' (47) 67
+':' (58) 28 29 30 31 35 43 44 45 46 48 49
+';' (59) 2 6 7 12 28 29 30 31 34 35 38 39 42 48 49 53 57 103 105 118
+'<' (60) 73
+'=' (61) 34 35 71
+'>' (62) 74
+'[' (91) 23 24 94 95
+']' (93) 23 24 94 95
+error (256)
+IDENT (258) 2 31 36 37 39 44 48 49 86 92 110 111 116 117 118 122
+POSINT (259) 23 24 84
+REAL (260) 85
+STRING (261) 87
+KW_PROGRAM (262) 2
+KW_BEGIN (263) 8 53
+KW_END (264) 8 53
+KW_FUNCTION (265) 35 48 49
+KW_PROCEDURE (266) 39
+KW_RESULT (267) 121 125
+KW_ARRAY (268) 29 30 45 46 51 52
+KW_DO (269) 114 116 117
+KW_GOTO (270) 118
+KW_RETURN (271) 119 120
+KW_BOOLEAN (272) 20
+KW_ELSE (273) 113
+KW_IF (274) 112 113
+KW_OF (275) 29 30 45 46 51 52
+KW_REAL (276) 22
+KW_THEN (277) 112 113
+KW_CHAR (278) 21
+KW_FOR (279) 116 117
+KW_INTEGER (280) 19
+KW_REPEAT (281) 115
+KW_UNTIL (282) 115
+KW_VAR (283) 25
+KW_WHILE (284) 114
+KW_TO (285) 116
+KW_DOWNTO (286) 117
+KW_TYPE (287) 32
+TK_ASSIGN (288) 110 111 116 117 121
+BOOLEAN_TRUE (289) 88
+BOOLEAN_FALSE (290) 89
+CAST (291)
+KW_OR (292) 79
+OP_LOG_OR (293) 80
+KW_AND (294) 77
+OP_LOG_AND (295) 78
+OP_NEQ (296) 72
+OP_LEQT (297) 75
+OP_GEQT (298) 76
+KW_DIV (299) 66
+KW_MOD (300) 65
+KW_NOT (301) 63
+OP_LOG_NOT (302) 64
+
+
+Nonterminals, with rules where they appear
+
+$accept (63)
+    on left: 0
+program (64)
+    on left: 1, on right: 0
+program_decl (65)
+    on left: 2, on right: 1
+sec_header (66)
+    on left: 3 4 5 6 7, on right: 1 4 5 6 7 38 47
+complex_cmd (67)
+    on left: 8, on right: 1 38 105
+statements (68)
+    on left: 9 10, on right: 8
+statement_list (69)
+    on left: 11 12 13, on right: 10 12 13
+statement (70)
+    on left: 14 15 16, on right: 11 12 13
+subprogram (71)
+    on left: 17 18, on right: 5 7
+basic_data_type (72)
+    on left: 19 20 21 22, on right: 28 29 30 43 45 46 50 51 52 91
+dimensions (73)
+    on left: 23 24, on right: 24 30 46 52
+var_decl (74)
+    on left: 25 26 27, on right: 4 6
+var_decl_comp (75)
+    on left: 28 29 30 31, on right: 25 26
+special_type (76)
+    on left: 32 33, on right: 27
+types (77)
+    on left: 34 35, on right: 32 33
+var_id (78)
+    on left: 36 37, on right: 28 29 30 31 34 35 37 43 44 45 46
+procedure (79)
+    on left: 38, on right: 17
+procedure_decl (80)
+    on left: 39, on right: 38
+declaration (81)
+    on left: 40 41 42, on right: 35 39 42 48 49
+declaration_comp (82)
+    on left: 43 44 45 46, on right: 41 42
+function (83)
+    on left: 47, on right: 18
+function_decl (84)
+    on left: 48 49, on right: 47
+data_type (85)
+    on left: 50 51 52, on right: 34 35 48
+function_body (86)
+    on left: 53, on right: 47
+func_statements (87)
+    on left: 54 55, on right: 53
+statement_list2 (88)
+    on left: 56 57 58, on right: 55 57 58
+function_stmt (89)
+    on left: 59 60 61, on right: 56 57 58
+expr (90)
+    on left: 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79
+    80, on right: 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 90
+    91 94 95 110 111 112 113 114 115 116 117 121 124 126
+unary (91)
+    on left: 81 82 83, on right: 62 63 64 65 66 67 68 69 70 71 72 73
+    74 75 76 77 78 79 80
+element (92)
+    on left: 84 85 86 87 88 89 90 91 92 93, on right: 81 82 83
+hooks_custom (93)
+    on left: 94 95, on right: 92 95 111
+cmd_list (94)
+    on left: 96 97 98 99 100 101 102, on right: 14 59
+stmt_comp (95)
+    on left: 103 104 105 106 107 108 109, on right: 112 113 114 115
+    116 117
+assign_cmd (96)
+    on left: 110 111, on right: 97 104
+if_stmt (97)
+    on left: 112 113, on right: 96 107
+while_stmt (98)
+    on left: 114, on right: 98 108
+repeat_stmt (99)
+    on left: 115, on right: 101
+for_stmt (100)
+    on left: 116 117, on right: 99 109
+goto_cmd (101)
+    on left: 118, on right: 100
+return_cmd (102)
+    on left: 119, on right: 15 103
+return_cmd2 (103)
+    on left: 120, on right: 60
+result_cmd (104)
+    on left: 121, on right: 16 61 106
+func_cmd (105)
+    on left: 122, on right: 93 102
+func_cmd_arg (106)
+    on left: 123 124 125 126, on right: 122 126
+
+
+State 0
+
+    0 $accept: . program $end
+    1 program: . program_decl sec_header complex_cmd '.'
+    2 program_decl: . KW_PROGRAM IDENT ';'
+
+    KW_PROGRAM  shift, and go to state 1
+
+    program       go to state 2
+    program_decl  go to state 3
+
+
+State 1
+
+    2 program_decl: KW_PROGRAM . IDENT ';'
+
+    IDENT  shift, and go to state 4
+
+
+State 2
+
+    0 $accept: program . $end
+
+    $end  shift, and go to state 5
+
+
+State 3
+
+    1 program: program_decl . sec_header complex_cmd '.'
+    3 sec_header: . %empty
+    4           | . sec_header var_decl
+    5           | . sec_header subprogram
+    6           | . sec_header ';' var_decl
+    7           | . sec_header ';' subprogram
+
+    $default  reduce using rule 3 (sec_header)
+
+    sec_header  go to state 6
+
+
+State 4
+
+    2 program_decl: KW_PROGRAM IDENT . ';'
+
+    ';'  shift, and go to state 7
+
+
+State 5
+
+    0 $accept: program $end .
+
+    $default  accept
+
+
+State 6
+
+    1 program: program_decl sec_header . complex_cmd '.'
+    4 sec_header: sec_header . var_decl
+    5           | sec_header . subprogram
+    6           | sec_header . ';' var_decl
+    7           | sec_header . ';' subprogram
+    8 complex_cmd: . KW_BEGIN statements KW_END
+   17 subprogram: . procedure
+   18           | . function
+   25 var_decl: . KW_VAR var_decl_comp
+   26         | . var_decl_comp
+   27         | . special_type
+   28 var_decl_comp: . var_id ':' basic_data_type ';'
+   29              | . var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | . var_id ':' IDENT ';'
+   32 special_type: . KW_TYPE types
+   33             | . types
+   34 types: . var_id '=' data_type ';'
+   35      | . var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   38 procedure: . procedure_decl sec_header complex_cmd ';'
+   39 procedure_decl: . KW_PROCEDURE IDENT '(' declaration ')' ';'
+   47 function: . function_decl sec_header function_body
+   48 function_decl: . KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';'
+   49              | . KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';'
+
+    IDENT         shift, and go to state 8
+    KW_BEGIN      shift, and go to state 9
+    KW_FUNCTION   shift, and go to state 10
+    KW_PROCEDURE  shift, and go to state 11
+    KW_VAR        shift, and go to state 12
+    KW_TYPE       shift, and go to state 13
+    ';'           shift, and go to state 14
+
+    complex_cmd     go to state 15
+    subprogram      go to state 16
+    var_decl        go to state 17
+    var_decl_comp   go to state 18
+    special_type    go to state 19
+    types           go to state 20
+    var_id          go to state 21
+    procedure       go to state 22
+    procedure_decl  go to state 23
+    function        go to state 24
+    function_decl   go to state 25
+
+
+State 7
+
+    2 program_decl: KW_PROGRAM IDENT ';' .
+
+    $default  reduce using rule 2 (program_decl)
+
+
+State 8
+
+   36 var_id: IDENT .
+
+    $default  reduce using rule 36 (var_id)
+
+
+State 9
+
+    8 complex_cmd: KW_BEGIN . statements KW_END
+    9 statements: . %empty  [KW_END]
+   10           | . statement_list
+   11 statement_list: . statement
+   12               | . statement_list ';' statement
+   13               | . statement_list statement
+   14 statement: . cmd_list
+   15          | . return_cmd
+   16          | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+
+    $default  reduce using rule 9 (statements)
+
+    statements      go to state 34
+    statement_list  go to state 35
+    statement       go to state 36
+    cmd_list        go to state 37
+    assign_cmd      go to state 38
+    if_stmt         go to state 39
+    while_stmt      go to state 40
+    repeat_stmt     go to state 41
+    for_stmt        go to state 42
+    goto_cmd        go to state 43
+    return_cmd      go to state 44
+    result_cmd      go to state 45
+    func_cmd        go to state 46
+
+
+State 10
+
+   48 function_decl: KW_FUNCTION . IDENT '(' declaration ')' ':' data_type ';'
+   49              | KW_FUNCTION . IDENT '(' declaration ')' ':' IDENT ';'
+
+    IDENT  shift, and go to state 47
+
+
+State 11
+
+   39 procedure_decl: KW_PROCEDURE . IDENT '(' declaration ')' ';'
+
+    IDENT  shift, and go to state 48
+
+
+State 12
+
+   25 var_decl: KW_VAR . var_decl_comp
+   28 var_decl_comp: . var_id ':' basic_data_type ';'
+   29              | . var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | . var_id ':' IDENT ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+
+    IDENT  shift, and go to state 8
+
+    var_decl_comp  go to state 49
+    var_id         go to state 50
+
+
+State 13
+
+   32 special_type: KW_TYPE . types
+   34 types: . var_id '=' data_type ';'
+   35      | . var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+
+    IDENT  shift, and go to state 8
+
+    types   go to state 51
+    var_id  go to state 52
+
+
+State 14
+
+    6 sec_header: sec_header ';' . var_decl
+    7           | sec_header ';' . subprogram
+   17 subprogram: . procedure
+   18           | . function
+   25 var_decl: . KW_VAR var_decl_comp
+   26         | . var_decl_comp
+   27         | . special_type
+   28 var_decl_comp: . var_id ':' basic_data_type ';'
+   29              | . var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | . var_id ':' IDENT ';'
+   32 special_type: . KW_TYPE types
+   33             | . types
+   34 types: . var_id '=' data_type ';'
+   35      | . var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   38 procedure: . procedure_decl sec_header complex_cmd ';'
+   39 procedure_decl: . KW_PROCEDURE IDENT '(' declaration ')' ';'
+   47 function: . function_decl sec_header function_body
+   48 function_decl: . KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';'
+   49              | . KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';'
+
+    IDENT         shift, and go to state 8
+    KW_FUNCTION   shift, and go to state 10
+    KW_PROCEDURE  shift, and go to state 11
+    KW_VAR        shift, and go to state 12
+    KW_TYPE       shift, and go to state 13
+
+    subprogram      go to state 53
+    var_decl        go to state 54
+    var_decl_comp   go to state 18
+    special_type    go to state 19
+    types           go to state 20
+    var_id          go to state 21
+    procedure       go to state 22
+    procedure_decl  go to state 23
+    function        go to state 24
+    function_decl   go to state 25
+
+
+State 15
+
+    1 program: program_decl sec_header complex_cmd . '.'
+
+    '.'  shift, and go to state 55
+
+
+State 16
+
+    5 sec_header: sec_header subprogram .
+
+    $default  reduce using rule 5 (sec_header)
+
+
+State 17
+
+    4 sec_header: sec_header var_decl .
+
+    $default  reduce using rule 4 (sec_header)
+
+
+State 18
+
+   26 var_decl: var_decl_comp .
+
+    $default  reduce using rule 26 (var_decl)
+
+
+State 19
+
+   27 var_decl: special_type .
+
+    $default  reduce using rule 27 (var_decl)
+
+
+State 20
+
+   33 special_type: types .
+
+    $default  reduce using rule 33 (special_type)
+
+
+State 21
+
+   28 var_decl_comp: var_id . ':' basic_data_type ';'
+   29              | var_id . ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | var_id . ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | var_id . ':' IDENT ';'
+   34 types: var_id . '=' data_type ';'
+   35      | var_id . '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   37 var_id: var_id . ',' IDENT
+
+    '='  shift, and go to state 56
+    ':'  shift, and go to state 57
+    ','  shift, and go to state 58
+
+
+State 22
+
+   17 subprogram: procedure .
+
+    $default  reduce using rule 17 (subprogram)
+
+
+State 23
+
+    3 sec_header: . %empty
+    4           | . sec_header var_decl
+    5           | . sec_header subprogram
+    6           | . sec_header ';' var_decl
+    7           | . sec_header ';' subprogram
+   38 procedure: procedure_decl . sec_header complex_cmd ';'
+
+    $default  reduce using rule 3 (sec_header)
+
+    sec_header  go to state 59
+
+
+State 24
+
+   18 subprogram: function .
+
+    $default  reduce using rule 18 (subprogram)
+
+
+State 25
+
+    3 sec_header: . %empty
+    4           | . sec_header var_decl
+    5           | . sec_header subprogram
+    6           | . sec_header ';' var_decl
+    7           | . sec_header ';' subprogram
+   47 function: function_decl . sec_header function_body
+
+    $default  reduce using rule 3 (sec_header)
+
+    sec_header  go to state 60
+
+
+State 26
+
+   94 hooks_custom: . '[' expr ']'
+   95             | . hooks_custom '[' expr ']'
+  110 assign_cmd: IDENT . TK_ASSIGN expr
+  111           | IDENT . hooks_custom TK_ASSIGN expr
+  122 func_cmd: IDENT . '(' func_cmd_arg ')'
+
+    TK_ASSIGN  shift, and go to state 61
+    '['        shift, and go to state 62
+    '('        shift, and go to state 63
+
+    hooks_custom  go to state 64
+
+
+State 27
+
+  121 result_cmd: KW_RESULT . TK_ASSIGN expr
+
+    TK_ASSIGN  shift, and go to state 65
+
+
+State 28
+
+  118 goto_cmd: KW_GOTO . IDENT ';'
+
+    IDENT  shift, and go to state 66
+
+
+State 29
+
+  119 return_cmd: KW_RETURN .
+
+    $default  reduce using rule 119 (return_cmd)
+
+
+State 30
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  112 if_stmt: KW_IF . expr KW_THEN stmt_comp
+  113        | KW_IF . expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 78
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 31
+
+  116 for_stmt: KW_FOR . IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | KW_FOR . IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+
+    IDENT  shift, and go to state 82
+
+
+State 32
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: KW_REPEAT . stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 85
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 33
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  114 while_stmt: KW_WHILE . expr KW_DO stmt_comp
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 92
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 34
+
+    8 complex_cmd: KW_BEGIN statements . KW_END
+
+    KW_END  shift, and go to state 93
+
+
+State 35
+
+   10 statements: statement_list .  [KW_END]
+   12 statement_list: statement_list . ';' statement
+   13               | statement_list . statement
+   14 statement: . cmd_list
+   15          | . return_cmd
+   16          | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+    ';'        shift, and go to state 94
+
+    $default  reduce using rule 10 (statements)
+
+    statement    go to state 95
+    cmd_list     go to state 37
+    assign_cmd   go to state 38
+    if_stmt      go to state 39
+    while_stmt   go to state 40
+    repeat_stmt  go to state 41
+    for_stmt     go to state 42
+    goto_cmd     go to state 43
+    return_cmd   go to state 44
+    result_cmd   go to state 45
+    func_cmd     go to state 46
+
+
+State 36
+
+   11 statement_list: statement .
+
+    $default  reduce using rule 11 (statement_list)
+
+
+State 37
+
+   14 statement: cmd_list .
+
+    $default  reduce using rule 14 (statement)
+
+
+State 38
+
+   97 cmd_list: assign_cmd .
+
+    $default  reduce using rule 97 (cmd_list)
+
+
+State 39
+
+   96 cmd_list: if_stmt .
+
+    $default  reduce using rule 96 (cmd_list)
+
+
+State 40
+
+   98 cmd_list: while_stmt .
+
+    $default  reduce using rule 98 (cmd_list)
+
+
+State 41
+
+  101 cmd_list: repeat_stmt .
+
+    $default  reduce using rule 101 (cmd_list)
+
+
+State 42
+
+   99 cmd_list: for_stmt .
+
+    $default  reduce using rule 99 (cmd_list)
+
+
+State 43
+
+  100 cmd_list: goto_cmd .
+
+    $default  reduce using rule 100 (cmd_list)
+
+
+State 44
+
+   15 statement: return_cmd .
+
+    $default  reduce using rule 15 (statement)
+
+
+State 45
+
+   16 statement: result_cmd .
+
+    $default  reduce using rule 16 (statement)
+
+
+State 46
+
+  102 cmd_list: func_cmd .
+
+    $default  reduce using rule 102 (cmd_list)
+
+
+State 47
+
+   48 function_decl: KW_FUNCTION IDENT . '(' declaration ')' ':' data_type ';'
+   49              | KW_FUNCTION IDENT . '(' declaration ')' ':' IDENT ';'
+
+    '('  shift, and go to state 96
+
+
+State 48
+
+   39 procedure_decl: KW_PROCEDURE IDENT . '(' declaration ')' ';'
+
+    '('  shift, and go to state 97
+
+
+State 49
+
+   25 var_decl: KW_VAR var_decl_comp .
+
+    $default  reduce using rule 25 (var_decl)
+
+
+State 50
+
+   28 var_decl_comp: var_id . ':' basic_data_type ';'
+   29              | var_id . ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | var_id . ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | var_id . ':' IDENT ';'
+   37 var_id: var_id . ',' IDENT
+
+    ':'  shift, and go to state 57
+    ','  shift, and go to state 58
+
+
+State 51
+
+   32 special_type: KW_TYPE types .
+
+    $default  reduce using rule 32 (special_type)
+
+
+State 52
+
+   34 types: var_id . '=' data_type ';'
+   35      | var_id . '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   37 var_id: var_id . ',' IDENT
+
+    '='  shift, and go to state 56
+    ','  shift, and go to state 58
+
+
+State 53
+
+    7 sec_header: sec_header ';' subprogram .
+
+    $default  reduce using rule 7 (sec_header)
+
+
+State 54
+
+    6 sec_header: sec_header ';' var_decl .
+
+    $default  reduce using rule 6 (sec_header)
+
+
+State 55
+
+    1 program: program_decl sec_header complex_cmd '.' .
+
+    $default  reduce using rule 1 (program)
+
+
+State 56
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   34 types: var_id '=' . data_type ';'
+   35      | var_id '=' . KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   50 data_type: . basic_data_type
+   51          | . KW_ARRAY KW_OF basic_data_type
+   52          | . KW_ARRAY dimensions KW_OF basic_data_type
+
+    KW_FUNCTION  shift, and go to state 98
+    KW_ARRAY     shift, and go to state 99
+    KW_BOOLEAN   shift, and go to state 100
+    KW_REAL      shift, and go to state 101
+    KW_CHAR      shift, and go to state 102
+    KW_INTEGER   shift, and go to state 103
+
+    basic_data_type  go to state 104
+    data_type        go to state 105
+
+
+State 57
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   28 var_decl_comp: var_id ':' . basic_data_type ';'
+   29              | var_id ':' . KW_ARRAY KW_OF basic_data_type ';'
+   30              | var_id ':' . KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | var_id ':' . IDENT ';'
+
+    IDENT       shift, and go to state 106
+    KW_ARRAY    shift, and go to state 107
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 108
+
+
+State 58
+
+   37 var_id: var_id ',' . IDENT
+
+    IDENT  shift, and go to state 109
+
+
+State 59
+
+    4 sec_header: sec_header . var_decl
+    5           | sec_header . subprogram
+    6           | sec_header . ';' var_decl
+    7           | sec_header . ';' subprogram
+    8 complex_cmd: . KW_BEGIN statements KW_END
+   17 subprogram: . procedure
+   18           | . function
+   25 var_decl: . KW_VAR var_decl_comp
+   26         | . var_decl_comp
+   27         | . special_type
+   28 var_decl_comp: . var_id ':' basic_data_type ';'
+   29              | . var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | . var_id ':' IDENT ';'
+   32 special_type: . KW_TYPE types
+   33             | . types
+   34 types: . var_id '=' data_type ';'
+   35      | . var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   38 procedure: . procedure_decl sec_header complex_cmd ';'
+   38          | procedure_decl sec_header . complex_cmd ';'
+   39 procedure_decl: . KW_PROCEDURE IDENT '(' declaration ')' ';'
+   47 function: . function_decl sec_header function_body
+   48 function_decl: . KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';'
+   49              | . KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';'
+
+    IDENT         shift, and go to state 8
+    KW_BEGIN      shift, and go to state 9
+    KW_FUNCTION   shift, and go to state 10
+    KW_PROCEDURE  shift, and go to state 11
+    KW_VAR        shift, and go to state 12
+    KW_TYPE       shift, and go to state 13
+    ';'           shift, and go to state 14
+
+    complex_cmd     go to state 110
+    subprogram      go to state 16
+    var_decl        go to state 17
+    var_decl_comp   go to state 18
+    special_type    go to state 19
+    types           go to state 20
+    var_id          go to state 21
+    procedure       go to state 22
+    procedure_decl  go to state 23
+    function        go to state 24
+    function_decl   go to state 25
+
+
+State 60
+
+    4 sec_header: sec_header . var_decl
+    5           | sec_header . subprogram
+    6           | sec_header . ';' var_decl
+    7           | sec_header . ';' subprogram
+   17 subprogram: . procedure
+   18           | . function
+   25 var_decl: . KW_VAR var_decl_comp
+   26         | . var_decl_comp
+   27         | . special_type
+   28 var_decl_comp: . var_id ':' basic_data_type ';'
+   29              | . var_id ':' KW_ARRAY KW_OF basic_data_type ';'
+   30              | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';'
+   31              | . var_id ':' IDENT ';'
+   32 special_type: . KW_TYPE types
+   33             | . types
+   34 types: . var_id '=' data_type ';'
+   35      | . var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   38 procedure: . procedure_decl sec_header complex_cmd ';'
+   39 procedure_decl: . KW_PROCEDURE IDENT '(' declaration ')' ';'
+   47 function: . function_decl sec_header function_body
+   47         | function_decl sec_header . function_body
+   48 function_decl: . KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';'
+   49              | . KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';'
+   53 function_body: . KW_BEGIN func_statements KW_END ';'
+
+    IDENT         shift, and go to state 8
+    KW_BEGIN      shift, and go to state 111
+    KW_FUNCTION   shift, and go to state 10
+    KW_PROCEDURE  shift, and go to state 11
+    KW_VAR        shift, and go to state 12
+    KW_TYPE       shift, and go to state 13
+    ';'           shift, and go to state 14
+
+    subprogram      go to state 16
+    var_decl        go to state 17
+    var_decl_comp   go to state 18
+    special_type    go to state 19
+    types           go to state 20
+    var_id          go to state 21
+    procedure       go to state 22
+    procedure_decl  go to state 23
+    function        go to state 24
+    function_decl   go to state 25
+    function_body   go to state 112
+
+
+State 61
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  110 assign_cmd: IDENT TK_ASSIGN . expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 113
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 62
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+   94 hooks_custom: '[' . expr ']'
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 114
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 63
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+  122         | IDENT '(' . func_cmd_arg ')'
+  123 func_cmd_arg: . %empty  [')', ',']
+  124             | . expr
+  125             | . KW_RESULT
+  126             | . func_cmd_arg ',' expr
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    KW_RESULT      shift, and go to state 115
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    $default  reduce using rule 123 (func_cmd_arg)
+
+    expr          go to state 116
+    unary         go to state 79
+    element       go to state 80
+    func_cmd      go to state 81
+    func_cmd_arg  go to state 117
+
+
+State 64
+
+   95 hooks_custom: hooks_custom . '[' expr ']'
+  111 assign_cmd: IDENT hooks_custom . TK_ASSIGN expr
+
+    TK_ASSIGN  shift, and go to state 118
+    '['        shift, and go to state 119
+
+
+State 65
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  121 result_cmd: KW_RESULT TK_ASSIGN . expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 120
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 66
+
+  118 goto_cmd: KW_GOTO IDENT . ';'
+
+    ';'  shift, and go to state 121
+
+
+State 67
+
+   86 element: IDENT .  [IDENT, KW_END, KW_RESULT, KW_DO, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_THEN, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, KW_TO, KW_DOWNTO, KW_OR, OP_LOG_OR, KW_AND, OP_LOG_AND, '=', OP_NEQ, '<', '>', OP_LEQT, OP_GEQT, '+', '-', '*', '/', KW_DIV, KW_MOD, ';', ']', ')', ',']
+   92        | IDENT . hooks_custom
+   94 hooks_custom: . '[' expr ']'
+   95             | . hooks_custom '[' expr ']'
+  122 func_cmd: IDENT . '(' func_cmd_arg ')'
+
+    '['  shift, and go to state 62
+    '('  shift, and go to state 63
+
+    $default  reduce using rule 86 (element)
+
+    hooks_custom  go to state 122
+
+
+State 68
+
+   84 element: POSINT .
+
+    $default  reduce using rule 84 (element)
+
+
+State 69
+
+   85 element: REAL .
+
+    $default  reduce using rule 85 (element)
+
+
+State 70
+
+   87 element: STRING .
+
+    $default  reduce using rule 87 (element)
+
+
+State 71
+
+   88 element: BOOLEAN_TRUE .
+
+    $default  reduce using rule 88 (element)
+
+
+State 72
+
+   89 element: BOOLEAN_FALSE .
+
+    $default  reduce using rule 89 (element)
+
+
+State 73
+
+   83 unary: '+' . element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '('            shift, and go to state 77
+
+    element   go to state 123
+    func_cmd  go to state 81
+
+
+State 74
+
+   82 unary: '-' . element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '('            shift, and go to state 77
+
+    element   go to state 124
+    func_cmd  go to state 81
+
+
+State 75
+
+   63 expr: KW_NOT . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 125
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 76
+
+   64 expr: OP_LOG_NOT . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 126
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 77
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   90        | '(' . expr ')'
+   91        | . '(' basic_data_type ')' expr
+   91        | '(' . basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    KW_BOOLEAN     shift, and go to state 100
+    KW_REAL        shift, and go to state 101
+    KW_CHAR        shift, and go to state 102
+    KW_INTEGER     shift, and go to state 103
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    basic_data_type  go to state 127
+    expr             go to state 128
+    unary            go to state 79
+    element          go to state 80
+    func_cmd         go to state 81
+
+
+State 78
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  112 if_stmt: KW_IF expr . KW_THEN stmt_comp
+  113        | KW_IF expr . KW_THEN stmt_comp KW_ELSE stmt_comp
+
+    KW_THEN     shift, and go to state 129
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+
+State 79
+
+   62 expr: unary .
+
+    $default  reduce using rule 62 (expr)
+
+
+State 80
+
+   81 unary: element .
+
+    $default  reduce using rule 81 (unary)
+
+
+State 81
+
+   93 element: func_cmd .
+
+    $default  reduce using rule 93 (element)
+
+
+State 82
+
+  116 for_stmt: KW_FOR IDENT . TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | KW_FOR IDENT . TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+
+    TK_ASSIGN  shift, and go to state 146
+
+
+State 83
+
+   94 hooks_custom: . '[' expr ']'
+   95             | . hooks_custom '[' expr ']'
+  110 assign_cmd: IDENT . TK_ASSIGN expr
+  111           | IDENT . hooks_custom TK_ASSIGN expr
+
+    TK_ASSIGN  shift, and go to state 61
+    '['        shift, and go to state 62
+
+    hooks_custom  go to state 64
+
+
+State 84
+
+  105 stmt_comp: complex_cmd . ';'
+
+    ';'  shift, and go to state 147
+
+
+State 85
+
+  115 repeat_stmt: KW_REPEAT stmt_comp . KW_UNTIL expr
+
+    KW_UNTIL  shift, and go to state 148
+
+
+State 86
+
+  104 stmt_comp: assign_cmd .
+
+    $default  reduce using rule 104 (stmt_comp)
+
+
+State 87
+
+  107 stmt_comp: if_stmt .
+
+    $default  reduce using rule 107 (stmt_comp)
+
+
+State 88
+
+  108 stmt_comp: while_stmt .
+
+    $default  reduce using rule 108 (stmt_comp)
+
+
+State 89
+
+  109 stmt_comp: for_stmt .
+
+    $default  reduce using rule 109 (stmt_comp)
+
+
+State 90
+
+  103 stmt_comp: return_cmd . ';'
+
+    ';'  shift, and go to state 149
+
+
+State 91
+
+  106 stmt_comp: result_cmd .
+
+    $default  reduce using rule 106 (stmt_comp)
+
+
+State 92
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  114 while_stmt: KW_WHILE expr . KW_DO stmt_comp
+
+    KW_DO       shift, and go to state 150
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+
+State 93
+
+    8 complex_cmd: KW_BEGIN statements KW_END .
+
+    $default  reduce using rule 8 (complex_cmd)
+
+
+State 94
+
+   12 statement_list: statement_list ';' . statement
+   14 statement: . cmd_list
+   15          | . return_cmd
+   16          | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+
+    statement    go to state 151
+    cmd_list     go to state 37
+    assign_cmd   go to state 38
+    if_stmt      go to state 39
+    while_stmt   go to state 40
+    repeat_stmt  go to state 41
+    for_stmt     go to state 42
+    goto_cmd     go to state 43
+    return_cmd   go to state 44
+    result_cmd   go to state 45
+    func_cmd     go to state 46
+
+
+State 95
+
+   13 statement_list: statement_list statement .
+
+    $default  reduce using rule 13 (statement_list)
+
+
+State 96
+
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   40 declaration: . %empty  [';', ')']
+   41            | . declaration_comp
+   42            | . declaration ';' declaration_comp
+   43 declaration_comp: . var_id ':' basic_data_type
+   44                 | . var_id ':' IDENT
+   45                 | . var_id ':' KW_ARRAY KW_OF basic_data_type
+   46                 | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type
+   48 function_decl: KW_FUNCTION IDENT '(' . declaration ')' ':' data_type ';'
+   49              | KW_FUNCTION IDENT '(' . declaration ')' ':' IDENT ';'
+
+    IDENT  shift, and go to state 8
+
+    $default  reduce using rule 40 (declaration)
+
+    var_id            go to state 152
+    declaration       go to state 153
+    declaration_comp  go to state 154
+
+
+State 97
+
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   39 procedure_decl: KW_PROCEDURE IDENT '(' . declaration ')' ';'
+   40 declaration: . %empty  [';', ')']
+   41            | . declaration_comp
+   42            | . declaration ';' declaration_comp
+   43 declaration_comp: . var_id ':' basic_data_type
+   44                 | . var_id ':' IDENT
+   45                 | . var_id ':' KW_ARRAY KW_OF basic_data_type
+   46                 | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type
+
+    IDENT  shift, and go to state 8
+
+    $default  reduce using rule 40 (declaration)
+
+    var_id            go to state 152
+    declaration       go to state 155
+    declaration_comp  go to state 154
+
+
+State 98
+
+   35 types: var_id '=' KW_FUNCTION . '(' declaration ')' ':' data_type ';'
+
+    '('  shift, and go to state 156
+
+
+State 99
+
+   23 dimensions: . '[' POSINT ']'
+   24           | . dimensions '[' POSINT ']'
+   51 data_type: KW_ARRAY . KW_OF basic_data_type
+   52          | KW_ARRAY . dimensions KW_OF basic_data_type
+
+    KW_OF  shift, and go to state 157
+    '['    shift, and go to state 158
+
+    dimensions  go to state 159
+
+
+State 100
+
+   20 basic_data_type: KW_BOOLEAN .
+
+    $default  reduce using rule 20 (basic_data_type)
+
+
+State 101
+
+   22 basic_data_type: KW_REAL .
+
+    $default  reduce using rule 22 (basic_data_type)
+
+
+State 102
+
+   21 basic_data_type: KW_CHAR .
+
+    $default  reduce using rule 21 (basic_data_type)
+
+
+State 103
+
+   19 basic_data_type: KW_INTEGER .
+
+    $default  reduce using rule 19 (basic_data_type)
+
+
+State 104
+
+   50 data_type: basic_data_type .
+
+    $default  reduce using rule 50 (data_type)
+
+
+State 105
+
+   34 types: var_id '=' data_type . ';'
+
+    ';'  shift, and go to state 160
+
+
+State 106
+
+   31 var_decl_comp: var_id ':' IDENT . ';'
+
+    ';'  shift, and go to state 161
+
+
+State 107
+
+   23 dimensions: . '[' POSINT ']'
+   24           | . dimensions '[' POSINT ']'
+   29 var_decl_comp: var_id ':' KW_ARRAY . KW_OF basic_data_type ';'
+   30              | var_id ':' KW_ARRAY . dimensions KW_OF basic_data_type ';'
+
+    KW_OF  shift, and go to state 162
+    '['    shift, and go to state 158
+
+    dimensions  go to state 163
+
+
+State 108
+
+   28 var_decl_comp: var_id ':' basic_data_type . ';'
+
+    ';'  shift, and go to state 164
+
+
+State 109
+
+   37 var_id: var_id ',' IDENT .
+
+    $default  reduce using rule 37 (var_id)
+
+
+State 110
+
+   38 procedure: procedure_decl sec_header complex_cmd . ';'
+
+    ';'  shift, and go to state 165
+
+
+State 111
+
+   53 function_body: KW_BEGIN . func_statements KW_END ';'
+   54 func_statements: . %empty  [KW_END]
+   55                | . statement_list2
+   56 statement_list2: . function_stmt
+   57                | . statement_list2 ';' function_stmt
+   58                | . statement_list2 function_stmt
+   59 function_stmt: . cmd_list
+   60              | . return_cmd2
+   61              | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  120 return_cmd2: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 166
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+
+    $default  reduce using rule 54 (func_statements)
+
+    func_statements  go to state 167
+    statement_list2  go to state 168
+    function_stmt    go to state 169
+    cmd_list         go to state 170
+    assign_cmd       go to state 38
+    if_stmt          go to state 39
+    while_stmt       go to state 40
+    repeat_stmt      go to state 41
+    for_stmt         go to state 42
+    goto_cmd         go to state 43
+    return_cmd2      go to state 171
+    result_cmd       go to state 172
+    func_cmd         go to state 46
+
+
+State 112
+
+   47 function: function_decl sec_header function_body .
+
+    $default  reduce using rule 47 (function)
+
+
+State 113
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  110 assign_cmd: IDENT TK_ASSIGN expr .  [IDENT, KW_END, KW_RESULT, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, ';']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 110 (assign_cmd)
+
+
+State 114
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+   94 hooks_custom: '[' expr . ']'
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+    ']'         shift, and go to state 173
+
+
+State 115
+
+  125 func_cmd_arg: KW_RESULT .
+
+    $default  reduce using rule 125 (func_cmd_arg)
+
+
+State 116
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  124 func_cmd_arg: expr .  [')', ',']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 124 (func_cmd_arg)
+
+
+State 117
+
+  122 func_cmd: IDENT '(' func_cmd_arg . ')'
+  126 func_cmd_arg: func_cmd_arg . ',' expr
+
+    ')'  shift, and go to state 174
+    ','  shift, and go to state 175
+
+
+State 118
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  111 assign_cmd: IDENT hooks_custom TK_ASSIGN . expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 176
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 119
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+   95 hooks_custom: hooks_custom '[' . expr ']'
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 177
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 120
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  121 result_cmd: KW_RESULT TK_ASSIGN expr .  [IDENT, KW_END, KW_RESULT, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, ';']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 121 (result_cmd)
+
+
+State 121
+
+  118 goto_cmd: KW_GOTO IDENT ';' .
+
+    $default  reduce using rule 118 (goto_cmd)
+
+
+State 122
+
+   92 element: IDENT hooks_custom .  [IDENT, KW_END, KW_RESULT, KW_DO, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_THEN, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, KW_TO, KW_DOWNTO, KW_OR, OP_LOG_OR, KW_AND, OP_LOG_AND, '=', OP_NEQ, '<', '>', OP_LEQT, OP_GEQT, '+', '-', '*', '/', KW_DIV, KW_MOD, ';', ']', ')', ',']
+   95 hooks_custom: hooks_custom . '[' expr ']'
+
+    '['  shift, and go to state 119
+
+    $default  reduce using rule 92 (element)
+
+
+State 123
+
+   83 unary: '+' element .
+
+    $default  reduce using rule 83 (unary)
+
+
+State 124
+
+   82 unary: '-' element .
+
+    $default  reduce using rule 82 (unary)
+
+
+State 125
+
+   63 expr: KW_NOT unary .
+
+    $default  reduce using rule 63 (expr)
+
+
+State 126
+
+   64 expr: OP_LOG_NOT unary .
+
+    $default  reduce using rule 64 (expr)
+
+
+State 127
+
+   91 element: '(' basic_data_type . ')' expr
+
+    ')'  shift, and go to state 178
+
+
+State 128
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+   90 element: '(' expr . ')'
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+    ')'         shift, and go to state 179
+
+
+State 129
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  112        | KW_IF expr KW_THEN . stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  113        | KW_IF expr KW_THEN . stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 180
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 130
+
+   79 expr: expr KW_OR . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 181
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 131
+
+   80 expr: expr OP_LOG_OR . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 182
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 132
+
+   77 expr: expr KW_AND . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 183
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 133
+
+   78 expr: expr OP_LOG_AND . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 184
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 134
+
+   71 expr: expr '=' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 185
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 135
+
+   72 expr: expr OP_NEQ . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 186
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 136
+
+   73 expr: expr '<' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 187
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 137
+
+   74 expr: expr '>' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 188
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 138
+
+   75 expr: expr OP_LEQT . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 189
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 139
+
+   76 expr: expr OP_GEQT . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 190
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 140
+
+   69 expr: expr '+' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 191
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 141
+
+   70 expr: expr '-' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 192
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 142
+
+   68 expr: expr '*' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 193
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 143
+
+   67 expr: expr '/' . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 194
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 144
+
+   66 expr: expr KW_DIV . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 195
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 145
+
+   65 expr: expr KW_MOD . unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    '('            shift, and go to state 77
+
+    unary     go to state 196
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 146
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN . expr KW_TO expr KW_DO stmt_comp
+  117         | KW_FOR IDENT TK_ASSIGN . expr KW_DOWNTO expr KW_DO stmt_comp
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 197
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 147
+
+  105 stmt_comp: complex_cmd ';' .
+
+    $default  reduce using rule 105 (stmt_comp)
+
+
+State 148
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  115 repeat_stmt: KW_REPEAT stmt_comp KW_UNTIL . expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 198
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 149
+
+  103 stmt_comp: return_cmd ';' .
+
+    $default  reduce using rule 103 (stmt_comp)
+
+
+State 150
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  114           | KW_WHILE expr KW_DO . stmt_comp
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 199
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 151
+
+   12 statement_list: statement_list ';' statement .
+
+    $default  reduce using rule 12 (statement_list)
+
+
+State 152
+
+   37 var_id: var_id . ',' IDENT
+   43 declaration_comp: var_id . ':' basic_data_type
+   44                 | var_id . ':' IDENT
+   45                 | var_id . ':' KW_ARRAY KW_OF basic_data_type
+   46                 | var_id . ':' KW_ARRAY dimensions KW_OF basic_data_type
+
+    ':'  shift, and go to state 200
+    ','  shift, and go to state 58
+
+
+State 153
+
+   42 declaration: declaration . ';' declaration_comp
+   48 function_decl: KW_FUNCTION IDENT '(' declaration . ')' ':' data_type ';'
+   49              | KW_FUNCTION IDENT '(' declaration . ')' ':' IDENT ';'
+
+    ';'  shift, and go to state 201
+    ')'  shift, and go to state 202
+
+
+State 154
+
+   41 declaration: declaration_comp .
+
+    $default  reduce using rule 41 (declaration)
+
+
+State 155
+
+   39 procedure_decl: KW_PROCEDURE IDENT '(' declaration . ')' ';'
+   42 declaration: declaration . ';' declaration_comp
+
+    ';'  shift, and go to state 201
+    ')'  shift, and go to state 203
+
+
+State 156
+
+   35 types: var_id '=' KW_FUNCTION '(' . declaration ')' ':' data_type ';'
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   40 declaration: . %empty  [';', ')']
+   41            | . declaration_comp
+   42            | . declaration ';' declaration_comp
+   43 declaration_comp: . var_id ':' basic_data_type
+   44                 | . var_id ':' IDENT
+   45                 | . var_id ':' KW_ARRAY KW_OF basic_data_type
+   46                 | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type
+
+    IDENT  shift, and go to state 8
+
+    $default  reduce using rule 40 (declaration)
+
+    var_id            go to state 152
+    declaration       go to state 204
+    declaration_comp  go to state 154
+
+
+State 157
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   51 data_type: KW_ARRAY KW_OF . basic_data_type
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 205
+
+
+State 158
+
+   23 dimensions: '[' . POSINT ']'
+
+    POSINT  shift, and go to state 206
+
+
+State 159
+
+   24 dimensions: dimensions . '[' POSINT ']'
+   52 data_type: KW_ARRAY dimensions . KW_OF basic_data_type
+
+    KW_OF  shift, and go to state 207
+    '['    shift, and go to state 208
+
+
+State 160
+
+   34 types: var_id '=' data_type ';' .
+
+    $default  reduce using rule 34 (types)
+
+
+State 161
+
+   31 var_decl_comp: var_id ':' IDENT ';' .
+
+    $default  reduce using rule 31 (var_decl_comp)
+
+
+State 162
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   29 var_decl_comp: var_id ':' KW_ARRAY KW_OF . basic_data_type ';'
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 209
+
+
+State 163
+
+   24 dimensions: dimensions . '[' POSINT ']'
+   30 var_decl_comp: var_id ':' KW_ARRAY dimensions . KW_OF basic_data_type ';'
+
+    KW_OF  shift, and go to state 210
+    '['    shift, and go to state 208
+
+
+State 164
+
+   28 var_decl_comp: var_id ':' basic_data_type ';' .
+
+    $default  reduce using rule 28 (var_decl_comp)
+
+
+State 165
+
+   38 procedure: procedure_decl sec_header complex_cmd ';' .
+
+    $default  reduce using rule 38 (procedure)
+
+
+State 166
+
+  120 return_cmd2: KW_RETURN .
+
+    $default  reduce using rule 120 (return_cmd2)
+
+
+State 167
+
+   53 function_body: KW_BEGIN func_statements . KW_END ';'
+
+    KW_END  shift, and go to state 211
+
+
+State 168
+
+   55 func_statements: statement_list2 .  [KW_END]
+   57 statement_list2: statement_list2 . ';' function_stmt
+   58                | statement_list2 . function_stmt
+   59 function_stmt: . cmd_list
+   60              | . return_cmd2
+   61              | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  120 return_cmd2: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 166
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+    ';'        shift, and go to state 212
+
+    $default  reduce using rule 55 (func_statements)
+
+    function_stmt  go to state 213
+    cmd_list       go to state 170
+    assign_cmd     go to state 38
+    if_stmt        go to state 39
+    while_stmt     go to state 40
+    repeat_stmt    go to state 41
+    for_stmt       go to state 42
+    goto_cmd       go to state 43
+    return_cmd2    go to state 171
+    result_cmd     go to state 172
+    func_cmd       go to state 46
+
+
+State 169
+
+   56 statement_list2: function_stmt .
+
+    $default  reduce using rule 56 (statement_list2)
+
+
+State 170
+
+   59 function_stmt: cmd_list .
+
+    $default  reduce using rule 59 (function_stmt)
+
+
+State 171
+
+   60 function_stmt: return_cmd2 .
+
+    $default  reduce using rule 60 (function_stmt)
+
+
+State 172
+
+   61 function_stmt: result_cmd .
+
+    $default  reduce using rule 61 (function_stmt)
+
+
+State 173
+
+   94 hooks_custom: '[' expr ']' .
+
+    $default  reduce using rule 94 (hooks_custom)
+
+
+State 174
+
+  122 func_cmd: IDENT '(' func_cmd_arg ')' .
+
+    $default  reduce using rule 122 (func_cmd)
+
+
+State 175
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+  126 func_cmd_arg: func_cmd_arg ',' . expr
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 214
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 176
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  111 assign_cmd: IDENT hooks_custom TK_ASSIGN expr .  [IDENT, KW_END, KW_RESULT, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, ';']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 111 (assign_cmd)
+
+
+State 177
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+   95 hooks_custom: hooks_custom '[' expr . ']'
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+    ']'         shift, and go to state 215
+
+
+State 178
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   91        | '(' basic_data_type ')' . expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 216
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 179
+
+   90 element: '(' expr ')' .
+
+    $default  reduce using rule 90 (element)
+
+
+State 180
+
+  112 if_stmt: KW_IF expr KW_THEN stmt_comp .  [IDENT, KW_END, KW_RESULT, KW_GOTO, KW_RETURN, KW_IF, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, ';']
+  113        | KW_IF expr KW_THEN stmt_comp . KW_ELSE stmt_comp
+
+    KW_ELSE  shift, and go to state 217
+
+    $default  reduce using rule 112 (if_stmt)
+
+    Conflict between rule 112 and token KW_ELSE resolved as shift (KW_THEN < KW_ELSE).
+
+
+State 181
+
+   79 expr: expr KW_OR unary .
+
+    $default  reduce using rule 79 (expr)
+
+
+State 182
+
+   80 expr: expr OP_LOG_OR unary .
+
+    $default  reduce using rule 80 (expr)
+
+
+State 183
+
+   77 expr: expr KW_AND unary .
+
+    $default  reduce using rule 77 (expr)
+
+
+State 184
+
+   78 expr: expr OP_LOG_AND unary .
+
+    $default  reduce using rule 78 (expr)
+
+
+State 185
+
+   71 expr: expr '=' unary .
+
+    $default  reduce using rule 71 (expr)
+
+
+State 186
+
+   72 expr: expr OP_NEQ unary .
+
+    $default  reduce using rule 72 (expr)
+
+
+State 187
+
+   73 expr: expr '<' unary .
+
+    $default  reduce using rule 73 (expr)
+
+
+State 188
+
+   74 expr: expr '>' unary .
+
+    $default  reduce using rule 74 (expr)
+
+
+State 189
+
+   75 expr: expr OP_LEQT unary .
+
+    $default  reduce using rule 75 (expr)
+
+
+State 190
+
+   76 expr: expr OP_GEQT unary .
+
+    $default  reduce using rule 76 (expr)
+
+
+State 191
+
+   69 expr: expr '+' unary .
+
+    $default  reduce using rule 69 (expr)
+
+
+State 192
+
+   70 expr: expr '-' unary .
+
+    $default  reduce using rule 70 (expr)
+
+
+State 193
+
+   68 expr: expr '*' unary .
+
+    $default  reduce using rule 68 (expr)
+
+
+State 194
+
+   67 expr: expr '/' unary .
+
+    $default  reduce using rule 67 (expr)
+
+
+State 195
+
+   66 expr: expr KW_DIV unary .
+
+    $default  reduce using rule 66 (expr)
+
+
+State 196
+
+   65 expr: expr KW_MOD unary .
+
+    $default  reduce using rule 65 (expr)
+
+
+State 197
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN expr . KW_TO expr KW_DO stmt_comp
+  117         | KW_FOR IDENT TK_ASSIGN expr . KW_DOWNTO expr KW_DO stmt_comp
+
+    KW_TO       shift, and go to state 218
+    KW_DOWNTO   shift, and go to state 219
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+
+State 198
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  115 repeat_stmt: KW_REPEAT stmt_comp KW_UNTIL expr .  [IDENT, KW_END, KW_RESULT, KW_GOTO, KW_RETURN, KW_IF, KW_FOR, KW_REPEAT, KW_WHILE, ';']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 115 (repeat_stmt)
+
+
+State 199
+
+  114 while_stmt: KW_WHILE expr KW_DO stmt_comp .
+
+    $default  reduce using rule 114 (while_stmt)
+
+
+State 200
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   43 declaration_comp: var_id ':' . basic_data_type
+   44                 | var_id ':' . IDENT
+   45                 | var_id ':' . KW_ARRAY KW_OF basic_data_type
+   46                 | var_id ':' . KW_ARRAY dimensions KW_OF basic_data_type
+
+    IDENT       shift, and go to state 220
+    KW_ARRAY    shift, and go to state 221
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 222
+
+
+State 201
+
+   36 var_id: . IDENT
+   37       | . var_id ',' IDENT
+   42 declaration: declaration ';' . declaration_comp
+   43 declaration_comp: . var_id ':' basic_data_type
+   44                 | . var_id ':' IDENT
+   45                 | . var_id ':' KW_ARRAY KW_OF basic_data_type
+   46                 | . var_id ':' KW_ARRAY dimensions KW_OF basic_data_type
+
+    IDENT  shift, and go to state 8
+
+    var_id            go to state 152
+    declaration_comp  go to state 223
+
+
+State 202
+
+   48 function_decl: KW_FUNCTION IDENT '(' declaration ')' . ':' data_type ';'
+   49              | KW_FUNCTION IDENT '(' declaration ')' . ':' IDENT ';'
+
+    ':'  shift, and go to state 224
+
+
+State 203
+
+   39 procedure_decl: KW_PROCEDURE IDENT '(' declaration ')' . ';'
+
+    ';'  shift, and go to state 225
+
+
+State 204
+
+   35 types: var_id '=' KW_FUNCTION '(' declaration . ')' ':' data_type ';'
+   42 declaration: declaration . ';' declaration_comp
+
+    ';'  shift, and go to state 201
+    ')'  shift, and go to state 226
+
+
+State 205
+
+   51 data_type: KW_ARRAY KW_OF basic_data_type .
+
+    $default  reduce using rule 51 (data_type)
+
+
+State 206
+
+   23 dimensions: '[' POSINT . ']'
+
+    ']'  shift, and go to state 227
+
+
+State 207
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   52 data_type: KW_ARRAY dimensions KW_OF . basic_data_type
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 228
+
+
+State 208
+
+   24 dimensions: dimensions '[' . POSINT ']'
+
+    POSINT  shift, and go to state 229
+
+
+State 209
+
+   29 var_decl_comp: var_id ':' KW_ARRAY KW_OF basic_data_type . ';'
+
+    ';'  shift, and go to state 230
+
+
+State 210
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   30 var_decl_comp: var_id ':' KW_ARRAY dimensions KW_OF . basic_data_type ';'
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 231
+
+
+State 211
+
+   53 function_body: KW_BEGIN func_statements KW_END . ';'
+
+    ';'  shift, and go to state 232
+
+
+State 212
+
+   57 statement_list2: statement_list2 ';' . function_stmt
+   59 function_stmt: . cmd_list
+   60              | . return_cmd2
+   61              | . result_cmd
+   96 cmd_list: . if_stmt
+   97         | . assign_cmd
+   98         | . while_stmt
+   99         | . for_stmt
+  100         | . goto_cmd
+  101         | . repeat_stmt
+  102         | . func_cmd
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  115 repeat_stmt: . KW_REPEAT stmt_comp KW_UNTIL expr
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  118 goto_cmd: . KW_GOTO IDENT ';'
+  120 return_cmd2: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT      shift, and go to state 26
+    KW_RESULT  shift, and go to state 27
+    KW_GOTO    shift, and go to state 28
+    KW_RETURN  shift, and go to state 166
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_REPEAT  shift, and go to state 32
+    KW_WHILE   shift, and go to state 33
+
+    function_stmt  go to state 233
+    cmd_list       go to state 170
+    assign_cmd     go to state 38
+    if_stmt        go to state 39
+    while_stmt     go to state 40
+    repeat_stmt    go to state 41
+    for_stmt       go to state 42
+    goto_cmd       go to state 43
+    return_cmd2    go to state 171
+    result_cmd     go to state 172
+    func_cmd       go to state 46
+
+
+State 213
+
+   58 statement_list2: statement_list2 function_stmt .
+
+    $default  reduce using rule 58 (statement_list2)
+
+
+State 214
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  126 func_cmd_arg: func_cmd_arg ',' expr .  [')', ',']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 126 (func_cmd_arg)
+
+
+State 215
+
+   95 hooks_custom: hooks_custom '[' expr ']' .
+
+    $default  reduce using rule 95 (hooks_custom)
+
+
+State 216
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+   91 element: '(' basic_data_type ')' expr .  [IDENT, KW_END, KW_RESULT, KW_DO, KW_GOTO, KW_RETURN, KW_ELSE, KW_IF, KW_THEN, KW_FOR, KW_REPEAT, KW_UNTIL, KW_WHILE, KW_TO, KW_DOWNTO, ';', ']', ')', ',']
+
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+    $default  reduce using rule 91 (element)
+
+    Conflict between rule 91 and token KW_OR resolved as shift (CAST < KW_OR).
+    Conflict between rule 91 and token OP_LOG_OR resolved as shift (CAST < OP_LOG_OR).
+    Conflict between rule 91 and token KW_AND resolved as shift (CAST < KW_AND).
+    Conflict between rule 91 and token OP_LOG_AND resolved as shift (CAST < OP_LOG_AND).
+    Conflict between rule 91 and token '=' resolved as shift (CAST < '=').
+    Conflict between rule 91 and token OP_NEQ resolved as shift (CAST < OP_NEQ).
+    Conflict between rule 91 and token '<' resolved as shift (CAST < '<').
+    Conflict between rule 91 and token '>' resolved as shift (CAST < '>').
+    Conflict between rule 91 and token OP_LEQT resolved as shift (CAST < OP_LEQT).
+    Conflict between rule 91 and token OP_GEQT resolved as shift (CAST < OP_GEQT).
+    Conflict between rule 91 and token '+' resolved as shift (CAST < '+').
+    Conflict between rule 91 and token '-' resolved as shift (CAST < '-').
+    Conflict between rule 91 and token '*' resolved as shift (CAST < '*').
+    Conflict between rule 91 and token '/' resolved as shift (CAST < '/').
+    Conflict between rule 91 and token KW_DIV resolved as shift (CAST < KW_DIV).
+    Conflict between rule 91 and token KW_MOD resolved as shift (CAST < KW_MOD).
+
+
+State 217
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  113        | KW_IF expr KW_THEN stmt_comp KW_ELSE . stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 234
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 218
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_TO . expr KW_DO stmt_comp
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 235
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 219
+
+   62 expr: . unary
+   63     | . KW_NOT unary
+   64     | . OP_LOG_NOT unary
+   65     | . expr KW_MOD unary
+   66     | . expr KW_DIV unary
+   67     | . expr '/' unary
+   68     | . expr '*' unary
+   69     | . expr '+' unary
+   70     | . expr '-' unary
+   71     | . expr '=' unary
+   72     | . expr OP_NEQ unary
+   73     | . expr '<' unary
+   74     | . expr '>' unary
+   75     | . expr OP_LEQT unary
+   76     | . expr OP_GEQT unary
+   77     | . expr KW_AND unary
+   78     | . expr OP_LOG_AND unary
+   79     | . expr KW_OR unary
+   80     | . expr OP_LOG_OR unary
+   81 unary: . element
+   82      | . '-' element
+   83      | . '+' element
+   84 element: . POSINT
+   85        | . REAL
+   86        | . IDENT
+   87        | . STRING
+   88        | . BOOLEAN_TRUE
+   89        | . BOOLEAN_FALSE
+   90        | . '(' expr ')'
+   91        | . '(' basic_data_type ')' expr
+   92        | . IDENT hooks_custom
+   93        | . func_cmd
+  117 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO . expr KW_DO stmt_comp
+  122 func_cmd: . IDENT '(' func_cmd_arg ')'
+
+    IDENT          shift, and go to state 67
+    POSINT         shift, and go to state 68
+    REAL           shift, and go to state 69
+    STRING         shift, and go to state 70
+    BOOLEAN_TRUE   shift, and go to state 71
+    BOOLEAN_FALSE  shift, and go to state 72
+    '+'            shift, and go to state 73
+    '-'            shift, and go to state 74
+    KW_NOT         shift, and go to state 75
+    OP_LOG_NOT     shift, and go to state 76
+    '('            shift, and go to state 77
+
+    expr      go to state 236
+    unary     go to state 79
+    element   go to state 80
+    func_cmd  go to state 81
+
+
+State 220
+
+   44 declaration_comp: var_id ':' IDENT .
+
+    $default  reduce using rule 44 (declaration_comp)
+
+
+State 221
+
+   23 dimensions: . '[' POSINT ']'
+   24           | . dimensions '[' POSINT ']'
+   45 declaration_comp: var_id ':' KW_ARRAY . KW_OF basic_data_type
+   46                 | var_id ':' KW_ARRAY . dimensions KW_OF basic_data_type
+
+    KW_OF  shift, and go to state 237
+    '['    shift, and go to state 158
+
+    dimensions  go to state 238
+
+
+State 222
+
+   43 declaration_comp: var_id ':' basic_data_type .
+
+    $default  reduce using rule 43 (declaration_comp)
+
+
+State 223
+
+   42 declaration: declaration ';' declaration_comp .
+
+    $default  reduce using rule 42 (declaration)
+
+
+State 224
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   48 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' . data_type ';'
+   49              | KW_FUNCTION IDENT '(' declaration ')' ':' . IDENT ';'
+   50 data_type: . basic_data_type
+   51          | . KW_ARRAY KW_OF basic_data_type
+   52          | . KW_ARRAY dimensions KW_OF basic_data_type
+
+    IDENT       shift, and go to state 239
+    KW_ARRAY    shift, and go to state 99
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 104
+    data_type        go to state 240
+
+
+State 225
+
+   39 procedure_decl: KW_PROCEDURE IDENT '(' declaration ')' ';' .
+
+    $default  reduce using rule 39 (procedure_decl)
+
+
+State 226
+
+   35 types: var_id '=' KW_FUNCTION '(' declaration ')' . ':' data_type ';'
+
+    ':'  shift, and go to state 241
+
+
+State 227
+
+   23 dimensions: '[' POSINT ']' .
+
+    $default  reduce using rule 23 (dimensions)
+
+
+State 228
+
+   52 data_type: KW_ARRAY dimensions KW_OF basic_data_type .
+
+    $default  reduce using rule 52 (data_type)
+
+
+State 229
+
+   24 dimensions: dimensions '[' POSINT . ']'
+
+    ']'  shift, and go to state 242
+
+
+State 230
+
+   29 var_decl_comp: var_id ':' KW_ARRAY KW_OF basic_data_type ';' .
+
+    $default  reduce using rule 29 (var_decl_comp)
+
+
+State 231
+
+   30 var_decl_comp: var_id ':' KW_ARRAY dimensions KW_OF basic_data_type . ';'
+
+    ';'  shift, and go to state 243
+
+
+State 232
+
+   53 function_body: KW_BEGIN func_statements KW_END ';' .
+
+    $default  reduce using rule 53 (function_body)
+
+
+State 233
+
+   57 statement_list2: statement_list2 ';' function_stmt .
+
+    $default  reduce using rule 57 (statement_list2)
+
+
+State 234
+
+  113 if_stmt: KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp .
+
+    $default  reduce using rule 113 (if_stmt)
+
+
+State 235
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_TO expr . KW_DO stmt_comp
+
+    KW_DO       shift, and go to state 244
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+
+State 236
+
+   65 expr: expr . KW_MOD unary
+   66     | expr . KW_DIV unary
+   67     | expr . '/' unary
+   68     | expr . '*' unary
+   69     | expr . '+' unary
+   70     | expr . '-' unary
+   71     | expr . '=' unary
+   72     | expr . OP_NEQ unary
+   73     | expr . '<' unary
+   74     | expr . '>' unary
+   75     | expr . OP_LEQT unary
+   76     | expr . OP_GEQT unary
+   77     | expr . KW_AND unary
+   78     | expr . OP_LOG_AND unary
+   79     | expr . KW_OR unary
+   80     | expr . OP_LOG_OR unary
+  117 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr . KW_DO stmt_comp
+
+    KW_DO       shift, and go to state 245
+    KW_OR       shift, and go to state 130
+    OP_LOG_OR   shift, and go to state 131
+    KW_AND      shift, and go to state 132
+    OP_LOG_AND  shift, and go to state 133
+    '='         shift, and go to state 134
+    OP_NEQ      shift, and go to state 135
+    '<'         shift, and go to state 136
+    '>'         shift, and go to state 137
+    OP_LEQT     shift, and go to state 138
+    OP_GEQT     shift, and go to state 139
+    '+'         shift, and go to state 140
+    '-'         shift, and go to state 141
+    '*'         shift, and go to state 142
+    '/'         shift, and go to state 143
+    KW_DIV      shift, and go to state 144
+    KW_MOD      shift, and go to state 145
+
+
+State 237
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   45 declaration_comp: var_id ':' KW_ARRAY KW_OF . basic_data_type
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 246
+
+
+State 238
+
+   24 dimensions: dimensions . '[' POSINT ']'
+   46 declaration_comp: var_id ':' KW_ARRAY dimensions . KW_OF basic_data_type
+
+    KW_OF  shift, and go to state 247
+    '['    shift, and go to state 208
+
+
+State 239
+
+   49 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' IDENT . ';'
+
+    ';'  shift, and go to state 248
+
+
+State 240
+
+   48 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' data_type . ';'
+
+    ';'  shift, and go to state 249
+
+
+State 241
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   35 types: var_id '=' KW_FUNCTION '(' declaration ')' ':' . data_type ';'
+   50 data_type: . basic_data_type
+   51          | . KW_ARRAY KW_OF basic_data_type
+   52          | . KW_ARRAY dimensions KW_OF basic_data_type
+
+    KW_ARRAY    shift, and go to state 99
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 104
+    data_type        go to state 250
+
+
+State 242
+
+   24 dimensions: dimensions '[' POSINT ']' .
+
+    $default  reduce using rule 24 (dimensions)
+
+
+State 243
+
+   30 var_decl_comp: var_id ':' KW_ARRAY dimensions KW_OF basic_data_type ';' .
+
+    $default  reduce using rule 30 (var_decl_comp)
+
+
+State 244
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  116         | KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO . stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 251
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 245
+
+    8 complex_cmd: . KW_BEGIN statements KW_END
+  103 stmt_comp: . return_cmd ';'
+  104          | . assign_cmd
+  105          | . complex_cmd ';'
+  106          | . result_cmd
+  107          | . if_stmt
+  108          | . while_stmt
+  109          | . for_stmt
+  110 assign_cmd: . IDENT TK_ASSIGN expr
+  111           | . IDENT hooks_custom TK_ASSIGN expr
+  112 if_stmt: . KW_IF expr KW_THEN stmt_comp
+  113        | . KW_IF expr KW_THEN stmt_comp KW_ELSE stmt_comp
+  114 while_stmt: . KW_WHILE expr KW_DO stmt_comp
+  116 for_stmt: . KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp
+  117         | . KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp
+  117         | KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO . stmt_comp
+  119 return_cmd: . KW_RETURN
+  121 result_cmd: . KW_RESULT TK_ASSIGN expr
+
+    IDENT      shift, and go to state 83
+    KW_BEGIN   shift, and go to state 9
+    KW_RESULT  shift, and go to state 27
+    KW_RETURN  shift, and go to state 29
+    KW_IF      shift, and go to state 30
+    KW_FOR     shift, and go to state 31
+    KW_WHILE   shift, and go to state 33
+
+    complex_cmd  go to state 84
+    stmt_comp    go to state 252
+    assign_cmd   go to state 86
+    if_stmt      go to state 87
+    while_stmt   go to state 88
+    for_stmt     go to state 89
+    return_cmd   go to state 90
+    result_cmd   go to state 91
+
+
+State 246
+
+   45 declaration_comp: var_id ':' KW_ARRAY KW_OF basic_data_type .
+
+    $default  reduce using rule 45 (declaration_comp)
+
+
+State 247
+
+   19 basic_data_type: . KW_INTEGER
+   20                | . KW_BOOLEAN
+   21                | . KW_CHAR
+   22                | . KW_REAL
+   46 declaration_comp: var_id ':' KW_ARRAY dimensions KW_OF . basic_data_type
+
+    KW_BOOLEAN  shift, and go to state 100
+    KW_REAL     shift, and go to state 101
+    KW_CHAR     shift, and go to state 102
+    KW_INTEGER  shift, and go to state 103
+
+    basic_data_type  go to state 253
+
+
+State 248
+
+   49 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' IDENT ';' .
+
+    $default  reduce using rule 49 (function_decl)
+
+
+State 249
+
+   48 function_decl: KW_FUNCTION IDENT '(' declaration ')' ':' data_type ';' .
+
+    $default  reduce using rule 48 (function_decl)
+
+
+State 250
+
+   35 types: var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type . ';'
+
+    ';'  shift, and go to state 254
+
+
+State 251
+
+  116 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_TO expr KW_DO stmt_comp .
+
+    $default  reduce using rule 116 (for_stmt)
+
+
+State 252
+
+  117 for_stmt: KW_FOR IDENT TK_ASSIGN expr KW_DOWNTO expr KW_DO stmt_comp .
+
+    $default  reduce using rule 117 (for_stmt)
+
+
+State 253
+
+   46 declaration_comp: var_id ':' KW_ARRAY dimensions KW_OF basic_data_type .
+
+    $default  reduce using rule 46 (declaration_comp)
+
+
+State 254
+
+   35 types: var_id '=' KW_FUNCTION '(' declaration ')' ':' data_type ';' .
+
+    $default  reduce using rule 35 (types)
